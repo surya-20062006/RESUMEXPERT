@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - ResumeXpert{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chatbot-hero {
+        background: #ffffff;
+        color: #1f2937;
+        padding: 60px 0;
+        margin-bottom: 40px;
+    }
+    
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-header {
+        background: #1f2937;
+        color: white;
+        padding: 20px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .chat-header h3 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .chat-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        background: #28a745;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+    
+    .message {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        animation: messageSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .message.user {
+        flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .message.user .message-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .message.bot .message-avatar {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .message-content {
+        max-width: 70%;
+        padding: 15px 20px;
+        border-radius: 18px;
+        position: relative;
+    }
+    
+    .message.user .message-content {
+        background: #1f2937;
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .message.bot .message-content {
+        background: white;
+        color: #333;
+        border: 1px solid #e9ecef;
+        border-bottom-left-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .message-time {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+    
+    .chat-input-container {
+        padding: 20px 30px;
+        background: white;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .chat-input-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+    
+    .chat-input {
+        flex: 1;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        resize: none;
+        max-height: 100px;
+        transition: all 0.3s ease;
+    }
+    
+    .chat-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .send-button {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .send-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .typing-indicator {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 0 20px;
+    }
+    
+    .typing-dots {
+        display: flex;
+        gap: 4px;
+    }
+    
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: #1f2937;
+        border-radius: 50%;
+        animation: typingDot 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    .typing-dot:nth-child(3) { animation-delay: 0s; }
+    
+    @keyframes typingDot {
+        0%, 80%, 100% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .quick-action {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .quick-action:hover {
+        background: #1f2937;
+        color: white;
+        border-color: #1f2937;
+    }
+    
+    .suggestions {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .suggestions h6 {
+        margin: 0 0 10px 0;
+        color: #856404;
+    }
+    
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 0;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    
+    .suggestion-item:hover {
+        color: #667eea;
+    }
+    
+    .chat-welcome {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+    
+    .welcome-icon {
+        font-size: 3rem;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .welcome-text {
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+    
+    .feature-item {
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .feature-icon {
+        font-size: 2rem;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+    
+    .feature-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .feature-desc {
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Chatbot Hero -->
+<section class="chatbot-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-robot me-3"></i>AI Career Assistant
+                </h1>
+                <p class="lead mb-0">Get personalized career advice, resume tips, and interview guidance from our AI assistant</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <h3>
+                <i class="fas fa-robot"></i>
+                ResumeXpert AI Assistant
+            </h3>
+            <div class="chat-status">
+                <div class="status-indicator"></div>
+                <span>Online</span>
+            </div>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome Message -->
+            <div class="chat-welcome" id="welcomeMessage">
+                <div class="welcome-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h4 class="welcome-title">Welcome to ResumeXpert AI Assistant!</h4>
+                <p class="welcome-text">
+                    I'm here to help you with your career journey. Ask me about:
+                </p>
+                
+                <div class="quick-actions">
+                    <span class="quick-action" onclick="sendQuickMessage('What skills are in demand for software developers?')">
+                        <i class="fas fa-code me-1"></i>Tech Skills
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('How can I improve my resume?')">
+                        <i class="fas fa-file-alt me-1"></i>Resume Tips
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('What are common interview questions?')">
+                        <i class="fas fa-question-circle me-1"></i>Interview Help
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('How do I write a good cover letter?')">
+                        <i class="fas fa-envelope me-1"></i>Cover Letters
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('What is your name?')">
+                        <i class="fas fa-robot me-1"></i>Who are you?
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('Help me with job search strategies')">
+                        <i class="fas fa-search me-1"></i>Job Search
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('Tell me about ResumeXpert features')">
+                        <i class="fas fa-info-circle me-1"></i>App Features
+                    </span>
+                    <span class="quick-action" onclick="sendQuickMessage('What can you help me with?')">
+                        <i class="fas fa-question me-1"></i>What can you do?
+                    </span>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-title">Career Guidance</div>
+                        <div class="feature-desc">Get personalized career advice</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="feature-title">Skill Suggestions</div>
+                        <div class="feature-desc">Discover trending skills</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="feature-title">Interview Prep</div>
+                        <div class="feature-desc">Practice interview questions</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="messageInput" 
+                    placeholder="Ask me anything about resumes, careers, or interviews..."
+                    rows="1"
+                ></textarea>
+                <button class="send-button" id="sendButton" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let chatMessages = document.getElementById('chatMessages');
+let messageInput = document.getElementById('messageInput');
+let sendButton = document.getElementById('sendButton');
+let typingIndicator = document.getElementById('typingIndicator');
+let welcomeMessage = document.getElementById('welcomeMessage');
+
+// Auto-resize textarea
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
+
+// Send message on Enter (but allow Shift+Enter for new line)
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+function sendQuickMessage(message) {
+    messageInput.value = message;
+    sendMessage();
+}
+
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
+    
+    // Hide welcome message
+    welcomeMessage.style.display = 'none';
+    
+    // Add user message
+    addMessage(message, 'user');
+    
+    // Clear input
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Send to server
+    fetch('/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideTypingIndicator();
+        if (data.response) {
+            addMessage(data.response, 'bot');
+        } else {
+            addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        hideTypingIndicator();
+        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+    });
+}
+
+function addMessage(content, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+    
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.innerHTML = `
+        <div>${formatMessage(content)}</div>
+        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+    `;
+    
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(messageContent);
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function formatMessage(content) {
+    // Enhanced formatting for better readability
+    return content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>')
+        .replace(/•/g, '•')
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #2563eb;">$1</strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #2563eb;">$1</strong>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/(\d+\.\s)/g, '<span style="color: #2563eb; font-weight: bold;">$1</span>');
+}
+
+function showTypingIndicator() {
+    typingIndicator.style.display = 'flex';
+    scrollToBottom();
+}
+
+function hideTypingIndicator() {
+    typingIndicator.style.display = 'none';
+}
+
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Initialize chat
+document.addEventListener('DOMContentLoaded', function() {
+    messageInput.focus();
+    
+    // Add some sample conversation if needed
+    // You can load chat history from the server here
+});
+
+// Handle send button state
+messageInput.addEventListener('input', function() {
+    sendButton.disabled = !this.value.trim();
+});
+
+// Initial state
+sendButton.disabled = true;
+</script>
+{% endblock %}

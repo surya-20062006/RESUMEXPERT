@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - ResumeXpert{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: #ffffff;
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Larger navbar on auth pages */
+    .navbar { padding: 1.25rem 0; }
+    .navbar-brand { font-size: 1.8rem; }
+
+    /* Center wrapper below navbar */
+    .auth-page {
+        min-height: calc(100vh - 100px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
+    }
+    
+    body::before { display: none; }
+    
+    .signup-container {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 40px;
+        width: 100%;
+        max-width: 450px;
+        animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 2;
+    }
+    
+    .signup-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .signup-title {
+        color: #1f2937;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .signup-subtitle {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    
+    .form-floating {
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 15px 20px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        height: auto;
+        width: 100%;
+    }
+    
+    .form-control:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        background: white;
+        outline: none;
+    }
+    
+    .form-floating label {
+        color: #6b7280;
+        font-weight: 500;
+        padding: 15px 20px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+    
+    .form-floating .form-control:focus ~ label,
+    .form-floating .form-control:not(:placeholder-shown) ~ label {
+        color: #8b5cf6;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    
+    .input-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 1.1rem;
+    }
+    
+    .btn-signup {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        color: white;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    
+    .btn-signup:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        color: white;
+    }
+    
+    .signup-footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(229, 231, 235, 0.5);
+    }
+    
+    .signup-footer a {
+        color: #8b5cf6;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    
+    .signup-footer a:hover {
+        color: #7c3aed;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        z-index: 10;
+        padding: 5px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    
+    .password-toggle:hover {
+        color: #8b5cf6;
+        background: rgba(139, 92, 246, 0.1);
+    }
+    
+    .password-strength {
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+    
+    .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+        margin-top: 5px;
+        background: #e5e7eb;
+    }
+    
+    .strength-weak { background: linear-gradient(90deg, #dc2626, #ef4444); width: 25%; }
+    .strength-fair { background: linear-gradient(90deg, #f59e0b, #fbbf24); width: 50%; }
+    .strength-good { background: linear-gradient(90deg, #06b6d4, #22d3ee); width: 75%; }
+    .strength-strong { background: linear-gradient(90deg, #10b981, #34d399); width: 100%; }
+    
+    .form-check-input:checked {
+        background-color: #8b5cf6;
+        border-color: #8b5cf6;
+    }
+    
+    .form-check-label {
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .form-check-label a {
+        color: #8b5cf6;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .form-check-label a:hover {
+        color: #7c3aed;
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .signup-container {
+            margin: 20px;
+            padding: 30px;
+        }
+        
+        .signup-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+<div class="signup-container">
+    <div class="signup-header">
+        <h2 class="signup-title">Sign Up</h2>
+        <p class="signup-subtitle">Create your ResumeXpert account</p>
+    </div>
+    
+    <form method="POST" id="signupForm">
+        <div class="form-floating">
+            <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+            <label for="username">Username</label>
+            <i class="fas fa-user input-icon"></i>
+        </div>
+        
+        <div class="form-floating">
+            <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+            <label for="email">Email Address</label>
+            <i class="fas fa-envelope input-icon"></i>
+        </div>
+        
+        <div class="form-floating position-relative">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+            <label for="password">Password</label>
+            <i class="fas fa-lock input-icon"></i>
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <i class="fas fa-eye" id="toggleIcon"></i>
+            </button>
+            <div class="password-strength">
+                <div class="strength-bar" id="strengthBar"></div>
+                <span id="strengthText">Password strength</span>
+            </div>
+        </div>
+        
+        <div class="form-floating position-relative">
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+            <label for="confirm_password">Confirm Password</label>
+            <i class="fas fa-lock input-icon"></i>
+            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                <i class="fas fa-eye" id="toggleIcon2"></i>
+            </button>
+            <div id="passwordMatch" class="password-strength"></div>
+        </div>
+        
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="terms" required>
+            <label class="form-check-label" for="terms">
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </label>
+        </div>
+        
+        <button type="submit" class="btn btn-signup">
+            Create Account
+        </button>
+    </form>
+    
+    <div class="signup-footer">
+        <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}">Sign in here</a></p>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword(fieldId) {
+    const passwordInput = document.getElementById(fieldId);
+    const toggleIcon = document.getElementById(fieldId === 'password' ? 'toggleIcon' : 'toggleIcon2');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+function checkPasswordStrength(password) {
+    let strength = 0;
+    let strengthText = '';
+    
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthTextEl = document.getElementById('strengthText');
+    
+    switch(strength) {
+        case 0:
+        case 1:
+            strengthBar.className = 'strength-bar strength-weak';
+            strengthText = 'Weak';
+            break;
+        case 2:
+        case 3:
+            strengthBar.className = 'strength-bar strength-fair';
+            strengthText = 'Fair';
+            break;
+        case 4:
+            strengthBar.className = 'strength-bar strength-good';
+            strengthText = 'Good';
+            break;
+        case 5:
+            strengthBar.className = 'strength-bar strength-strong';
+            strengthText = 'Strong';
+            break;
+    }
+    
+    strengthTextEl.textContent = `Password strength: ${strengthText}`;
+}
+
+function checkPasswordMatch() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const matchDiv = document.getElementById('passwordMatch');
+    
+    if (confirmPassword === '') {
+        matchDiv.innerHTML = '';
+        return;
+    }
+    
+    if (password === confirmPassword) {
+        matchDiv.innerHTML = '<span style="color: #28a745;"><i class="fas fa-check me-1"></i>Passwords match</span>';
+    } else {
+        matchDiv.innerHTML = '<span style="color: #dc3545;"><i class="fas fa-times me-1"></i>Passwords do not match</span>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    passwordInput.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+        checkPasswordMatch();
+    });
+    
+    confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+    
+    // Add smooth animations to form elements
+    const inputs = document.querySelectorAll('.form-control');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

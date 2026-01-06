@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+
+{% block title %}Job Matching - ResumeXpert{% endblock %}
+
+{% block extra_css %}
+<style>
+    .matching-hero {
+        background: #ffffff;
+        color: #1f2937;
+        padding: 60px 0;
+        margin-bottom: 40px;
+    }
+    
+    .match-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+        border: 1px solid #f3f4f6;
+        border-left: 5px solid #1f2937;
+    }
+    
+    .match-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    .match-score {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(#28a745 0deg, #28a745 var(--score-angle), #e9ecef var(--score-angle), #e9ecef 360deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin: 0 auto 20px;
+    }
+    
+    .match-score::before {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .score-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        z-index: 1;
+    }
+    
+    .job-upload-area {
+        border: 3px dashed #dee2e6;
+        border-radius: 15px;
+        padding: 40px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: #f9fafb;
+        margin-bottom: 30px;
+    }
+    
+    .job-upload-area:hover {
+        border-color: #1f2937;
+        background: #f3f4f6;
+    }
+    
+    .job-upload-area.dragover {
+        border-color: #1f2937;
+        background: #f3f4f6;
+        transform: scale(1.02);
+    }
+    
+    .skill-match {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .skill-match.matched {
+        background: rgba(40, 167, 69, 0.1);
+        border-left: 4px solid #28a745;
+    }
+    
+    .skill-match.missing {
+        background: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .skill-match.partial {
+        background: rgba(255, 193, 7, 0.1);
+        border-left: 4px solid #ffc107;
+    }
+    
+    .match-indicator {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .matched .match-indicator {
+        background: #28a745;
+    }
+    
+    .missing .match-indicator {
+        background: #dc3545;
+    }
+    
+    .partial .match-indicator {
+        background: #ffc107;
+    }
+    
+    .job-details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .job-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .job-company {
+        color: #1f2937;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .job-description {
+        color: #666;
+        line-height: 1.6;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .recommendations {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .recommendations h6 {
+        color: #856404;
+        margin-bottom: 15px;
+    }
+    
+    .recommendation-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #ffeaa7;
+    }
+    
+    .recommendation-item:last-child {
+        border-bottom: none;
+    }
+    
+    .progress-ring {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+    }
+    
+    .progress-ring circle {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+    
+    .progress-ring .bg {
+        stroke: #e9ecef;
+    }
+    
+    .progress-ring .progress {
+        stroke: #28a745;
+        stroke-dasharray: 314;
+        stroke-dashoffset: 314;
+        transition: stroke-dashoffset 1s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Job Matching Hero -->
+<section class="matching-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-search me-3"></i>Job Matching
+                </h1>
+                <p class="lead mb-0">Upload a job description and see how well your resume matches</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Job Description Upload -->
+    <div class="match-card">
+        <h3 class="mb-4">
+            <i class="fas fa-file-upload me-2"></i>Upload Job Description
+        </h3>
+        
+        <div class="job-upload-area" id="jobUploadArea">
+            <div class="upload-icon mb-3">
+                <i class="fas fa-file-text" style="font-size: 3rem; color: #667eea;"></i>
+            </div>
+            <h4>Upload Job Description</h4>
+            <p class="text-muted mb-3">Paste job description text or upload a PDF file</p>
+            <button class="btn btn-outline-primary me-2" onclick="showTextInput()">
+                <i class="fas fa-keyboard me-1"></i>Paste Text
+            </button>
+            <button class="btn btn-outline-primary" onclick="document.getElementById('jobFileInput').click()">
+                <i class="fas fa-upload me-1"></i>Upload PDF
+            </button>
+            <input type="file" id="jobFileInput" accept=".pdf" style="display: none;">
+        </div>
+        
+        <!-- Text Input Area -->
+        <div id="textInputArea" style="display: none;">
+            <textarea class="form-control" id="jobDescriptionText" rows="10" 
+                      placeholder="Paste the job description here..."></textarea>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="analyzeJobMatch()">
+                    <i class="fas fa-search me-2"></i>Analyze Match
+                </button>
+                <button class="btn btn-outline-secondary ms-2" onclick="hideTextInput()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Area -->
+    <div id="resultsArea" style="display: none;">
+        <!-- Overall Match Score -->
+        <div class="match-card text-center">
+            <h3 class="mb-4">Overall Match Score</h3>
+            <div class="match-score" id="overallScore">
+                <div class="score-text">85%</div>
+            </div>
+            <h5 class="text-success mb-3">Great Match!</h5>
+            <p class="text-muted">Your resume matches well with this job description</p>
+        </div>
+
+        <!-- Job Details -->
+        <div class="match-card">
+            <h3 class="mb-4">
+                <i class="fas fa-briefcase me-2"></i>Job Details
+            </h3>
+            <div class="job-details">
+                <div class="job-title" id="jobTitle">Software Engineer</div>
+                <div class="job-company" id="jobCompany">Tech Company Inc.</div>
+                <div class="job-description" id="jobDescription">
+                    We are looking for a skilled software engineer to join our team...
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Analysis -->
+        <div class="match-card">
+            <h3 class="mb-4">
+                <i class="fas fa-cogs me-2"></i>Skills Analysis
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center mb-4">
+                        <div class="progress-ring">
+                            <svg width="100" height="100">
+                                <circle class="bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="progress" cx="50" cy="50" r="45" id="skillsProgress"></circle>
+                            </svg>
+                        </div>
+                        <h5>Skills Match</h5>
+                        <p class="text-muted">Required vs Your Skills</p>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div id="skillsList">
+                        <!-- Skills will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experience Analysis -->
+        <div class="match-card">
+            <h3 class="mb-4">
+                <i class="fas fa-chart-line me-2"></i>Experience Analysis
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Required Experience</h6>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-warning" style="width: 70%">3-5 years</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Your Experience</h6>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" style="width: 80%">4 years</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="match-card">
+            <h3 class="mb-4">
+                <i class="fas fa-lightbulb me-2"></i>Improvement Recommendations
+            </h3>
+            
+            <div class="recommendations">
+                <h6><i class="fas fa-star me-2"></i>To improve your match score:</h6>
+                <div class="recommendation-item">
+                    <i class="fas fa-plus-circle text-success me-2"></i>
+                    <strong>Add Docker experience</strong> - This is mentioned 3 times in the job description
+                </div>
+                <div class="recommendation-item">
+                    <i class="fas fa-plus-circle text-success me-2"></i>
+                    <strong>Highlight your AWS experience</strong> - Make it more prominent in your resume
+                </div>
+                <div class="recommendation-item">
+                    <i class="fas fa-edit text-info me-2"></i>
+                    <strong>Quantify your achievements</strong> - Add specific numbers and metrics
+                </div>
+                <div class="recommendation-item">
+                    <i class="fas fa-plus-circle text-success me-2"></i>
+                    <strong>Add machine learning keywords</strong> - The role involves ML projects
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="match-card text-center">
+            <h4 class="mb-4">Ready to Apply?</h4>
+            <a href="{{ url_for('templates') }}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-palette me-2"></i>Optimize Resume
+            </a>
+            <button class="btn btn-outline-primary btn-lg" onclick="generateCoverLetter()">
+                <i class="fas fa-file-alt me-2"></i>Generate Cover Letter
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTextInput() {
+    document.getElementById('jobUploadArea').style.display = 'none';
+    document.getElementById('textInputArea').style.display = 'block';
+    document.getElementById('jobDescriptionText').focus();
+}
+
+function hideTextInput() {
+    document.getElementById('jobUploadArea').style.display = 'block';
+    document.getElementById('textInputArea').style.display = 'none';
+    document.getElementById('jobDescriptionText').value = '';
+}
+
+function analyzeJobMatch() {
+    const jobDescription = document.getElementById('jobDescriptionText').value;
+    if (!jobDescription.trim()) {
+        alert('Please enter a job description');
+        return;
+    }
+    
+    // Show loading
+    showGlobalLoading('Analyzing job match...');
+    
+    // Simulate analysis (in real app, this would call the backend)
+    setTimeout(() => {
+        hideGlobalLoading();
+        showResults(jobDescription);
+    }, 2000);
+}
+
+function showResults(jobDescription) {
+    // Show results area
+    document.getElementById('resultsArea').style.display = 'block';
+    
+    // Scroll to results
+    document.getElementById('resultsArea').scrollIntoView({
+        behavior: 'smooth'
+    });
+    
+    // Animate score circle
+    setTimeout(() => {
+        animateScore(85);
+        animateSkillsProgress(78);
+    }, 500);
+    
+    // Populate skills
+    populateSkills();
+}
+
+function animateScore(score) {
+    const scoreElement = document.getElementById('overallScore');
+    const angle = (score / 100) * 360;
+    scoreElement.style.setProperty('--score-angle', angle + 'deg');
+    scoreElement.querySelector('.score-text').textContent = score + '%';
+}
+
+function animateSkillsProgress(percentage) {
+    const progressCircle = document.getElementById('skillsProgress');
+    const circumference = 2 * Math.PI * 45;
+    const offset = circumference - (percentage / 100) * circumference;
+    
+    progressCircle.style.strokeDashoffset = offset;
+}
+
+function populateSkills() {
+    const skillsList = document.getElementById('skillsList');
+    const skills = [
+        { name: 'Python', match: 'matched', level: 'Expert' },
+        { name: 'JavaScript', match: 'matched', level: 'Advanced' },
+        { name: 'Docker', match: 'missing', level: 'Required' },
+        { name: 'AWS', match: 'partial', level: 'Intermediate' },
+        { name: 'React', match: 'matched', level: 'Advanced' },
+        { name: 'Machine Learning', match: 'missing', level: 'Preferred' },
+        { name: 'SQL', match: 'matched', level: 'Advanced' },
+        { name: 'Git', match: 'matched', level: 'Expert' }
+    ];
+    
+    skillsList.innerHTML = '';
+    skills.forEach(skill => {
+        const skillDiv = document.createElement('div');
+        skillDiv.className = `skill-match ${skill.match}`;
+        skillDiv.innerHTML = `
+            <div class="match-indicator">
+                ${skill.match === 'matched' ? '✓' : skill.match === 'missing' ? '✗' : '~'}
+            </div>
+            <div class="flex-grow-1">
+                <strong>${skill.name}</strong>
+                <span class="text-muted ms-2">(${skill.level})</span>
+            </div>
+        `;
+        skillsList.appendChild(skillDiv);
+    });
+}
+
+function generateCoverLetter() {
+    showNotification('Cover letter generation feature coming soon!', 'info');
+}
+
+// File upload handling
+document.getElementById('jobFileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+        showNotification('PDF parsing feature coming soon! Please paste the text instead.', 'info');
+    }
+});
+
+// Initialize drag and drop
+initializeDragAndDrop(document.getElementById('jobUploadArea'), function(file) {
+    if (file.type === 'application/pdf') {
+        showNotification('PDF parsing feature coming soon! Please paste the text instead.', 'info');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% block title %}ResumeXpert - Professional Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Professional Hero Section */
+    .hero-section {
+        background: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before { display: none; }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: #1f2937;
+        text-align: center;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: #111827;
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 2.5rem;
+        color: #6b7280;
+        font-weight: 400;
+        animation: fadeInUp 1s ease-out 0.2s both;
+        line-height: 1.6;
+    }
+    
+    .cta-buttons {
+        animation: fadeInUp 1s ease-out 0.4s both;
+    }
+    
+    .btn-hero {
+        padding: 16px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+        text-decoration: none;
+        display: inline-block;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-hero:hover::before {
+        left: 100%;
+    }
+    
+    .btn-hero:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary-hero {
+        background: #1f2937;
+        border: 2px solid #1f2937;
+        color: white;
+    }
+    
+    .btn-primary-hero:hover {
+        background: #374151;
+        border-color: #374151;
+        color: white;
+    }
+    
+    .btn-outline-hero {
+        background: transparent;
+        border: 2px solid #6b7280;
+        color: #6b7280;
+    }
+    
+    .btn-outline-hero:hover {
+        background: #6b7280;
+        color: white;
+    }
+    
+    /* Features Section */
+    .features-section {
+        padding: 100px 0;
+        background: #ffffff;
+        position: relative;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #111827;
+        text-align: center;
+    }
+    
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: #6b7280;
+        margin-bottom: 4rem;
+        text-align: center;
+    }
+    
+    .feature-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid #f3f4f6;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #1f2937;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        font-size: 2rem;
+        color: #1f2937;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        background: #1f2937;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #111827;
+    }
+    
+    .feature-description {
+        color: #6b7280;
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+    
+    /* Statistics Section */
+    .stats-section {
+        background: #f8fafc;
+        padding: 80px 0;
+        color: #1f2937;
+        position: relative;
+    }
+    
+    .stat-item {
+        text-align: center;
+        position: relative;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        font-size: 1.1rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    
+    /* Testimonials Section */
+    .testimonials-section {
+        padding: 100px 0;
+        background: #ffffff;
+    }
+    
+    .testimonial-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        text-align: center;
+        position: relative;
+        transition: all 0.3s ease;
+        border: 1px solid #f3f4f6;
+    }
+    
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+    
+    .testimonial-text {
+        font-size: 1.1rem;
+        font-style: italic;
+        color: #4b5563;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .testimonial-author {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+    
+    .testimonial-role {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: #1f2937;
+        padding: 100px 0;
+        color: white;
+        position: relative;
+    }
+    
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    .cta-subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.9;
+    }
+    
+    .btn-cta {
+        padding: 16px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 2px solid #ffffff;
+        color: #1f2937;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cta:hover {
+        background: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .btn-hero {
+            display: block;
+            margin: 10px auto;
+            width: 200px;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .cta-title {
+            font-size: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+    </div>
+    
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">ResumeXpert</h1>
+            
+            <div class="cta-buttons">
+                {% if not session.user_id %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary-hero btn-hero">
+                        <i class="fas fa-rocket me-2"></i>Start Your Journey
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-hero btn-hero">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary-hero btn-hero">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Resumes Created</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Templates</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">AI Support</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="section-title">Why Choose ResumeXpert?</h2>
+                <p class="section-subtitle">Everything you need to create a standout resume and advance your career</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">AI-Powered Analysis</h3>
+                    <p class="feature-description">
+                        Upload your resume and get instant feedback on skills, experience, and optimization suggestions powered by advanced AI technology.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="feature-title">Professional Templates</h3>
+                    <p class="feature-description">
+                        Choose from multiple modern, ATS-friendly resume templates designed by professionals to make you stand out from the crowd.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="feature-title">AI Career Assistant</h3>
+                    <p class="feature-description">
+                        Get personalized career advice, interview tips, and skill recommendations from our intelligent chatbot available 24/7.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Job Matching</h3>
+                    <p class="feature-description">
+                        Analyze job descriptions and get match scores to optimize your resume for specific positions and increase your chances.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3 class="feature-title">Export Options</h3>
+                    <p class="feature-description">
+                        Download your resume in multiple formats including PDF, DOCX, and HTML with professional formatting and high quality.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Mobile Friendly</h3>
+                    <p class="feature-description">
+                        Access and edit your resume on any device with our responsive design and mobile-optimized interface for convenience.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="section-title">What Our Users Say</h2>
+                <p class="section-subtitle">Real success stories from professionals who landed their dream jobs</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "ResumeXpert helped me create a professional resume that got me 3 job interviews in just one week! The AI analysis was incredibly helpful."
+                    </p>
+                    <div class="testimonial-author">Sarah Johnson</div>
+                    <div class="testimonial-role">Software Engineer at Google</div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "The templates are amazing and the AI assistant gave me great career advice. I finally got my dream job in marketing!"
+                    </p>
+                    <div class="testimonial-author">Michael Chen</div>
+                    <div class="testimonial-role">Marketing Manager at Microsoft</div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "The job matching feature helped me tailor my resume perfectly. I got a 95% match score and landed the job immediately!"
+                    </p>
+                    <div class="testimonial-author">Emily Rodriguez</div>
+                    <div class="testimonial-role">Data Scientist at Amazon</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container text-center">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Transform Your Career?</h2>
+            <p class="cta-subtitle">Join thousands of professionals who have already created winning resumes with ResumeXpert</p>
+            {% if not session.user_id %}
+                <a href="{{ url_for('signup') }}" class="btn btn-cta">
+                    <i class="fas fa-rocket me-2"></i>Start Building Now
+                </a>
+            {% else %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-cta">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

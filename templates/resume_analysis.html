@@ -1,0 +1,520 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Analysis - ResumeXpert{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analysis-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 40px;
+    }
+    
+    .analysis-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .analysis-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .skill-tag {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        margin: 5px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .skill-tag:hover {
+        transform: scale(1.05);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    }
+    
+    .progress-container {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 15px 0;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 1s ease-in-out;
+    }
+    
+    .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(#667eea 0deg, #667eea var(--score-angle), #e9ecef var(--score-angle), #e9ecef 360deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin: 0 auto 20px;
+    }
+    
+    .score-circle::before {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .score-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        z-index: 1;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+    }
+    
+    .suggestion-card {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .suggestion-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 3px 15px rgba(255, 193, 7, 0.2);
+    }
+    
+    .improvement-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .improvement-list li {
+        padding: 10px 0;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+    }
+    
+    .improvement-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .improvement-icon {
+        width: 30px;
+        height: 30px;
+        background: #28a745;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+        font-size: 0.8rem;
+    }
+    
+    .text-content {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .floating-action-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        z-index: 1000;
+    }
+    
+    .floating-action-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-slide-up {
+        animation: slideInUp 0.6s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Analysis Hero -->
+<section class="analysis-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-chart-line me-3"></i>Resume Analysis
+                </h1>
+                <p class="lead mb-0">{{ resume.original_filename }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Overall Score -->
+    <div class="analysis-card animate-slide-up">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3>Overall Resume Score</h3>
+        </div>
+        
+        <div class="row align-items-center">
+            <div class="col-md-4 text-center">
+                <div class="score-circle" style="--score-angle: 252deg;">
+                    <div class="score-text">85%</div>
+                </div>
+                <h5 class="text-muted">Good Foundation</h5>
+            </div>
+            <div class="col-md-8">
+                <div class="progress-container">
+                    <h6 class="mb-3">Resume Strength Breakdown</h6>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Skills & Keywords</span>
+                            <span>90%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar-custom" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Experience Details</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar-custom" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Education & Certifications</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar-custom" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Format & Structure</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar-custom" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Analysis -->
+    <div class="analysis-card animate-slide-up">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <h3>Skills Detected</h3>
+        </div>
+        
+        <div class="mb-4">
+            <h6 class="text-muted mb-3">Technical Skills ({{ analysis.skills|length }} found)</h6>
+            <div class="skills-container">
+                {% for skill in analysis.skills %}
+                <span class="skill-tag">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="suggestion-card">
+            <h6 class="mb-2">
+                <i class="fas fa-lightbulb me-2 text-warning"></i>Skill Recommendations
+            </h6>
+            <p class="mb-0">Consider adding these trending skills to enhance your resume:</p>
+            <div class="mt-2">
+                <span class="skill-tag" style="background: #ffc107; color: #333;">Machine Learning</span>
+                <span class="skill-tag" style="background: #ffc107; color: #333;">Docker</span>
+                <span class="skill-tag" style="background: #ffc107; color: #333;">Kubernetes</span>
+                <span class="skill-tag" style="background: #ffc107; color: #333;">AWS</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experience Analysis -->
+    <div class="analysis-card animate-slide-up">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <h3>Experience Analysis</h3>
+        </div>
+        
+        {% if analysis.experience %}
+        <div class="text-content mb-4">
+            {{ analysis.experience }}
+        </div>
+        
+        <div class="improvement-list">
+            <li>
+                <div class="improvement-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div>
+                    <strong>Good:</strong> Experience section is well-structured
+                </div>
+            </li>
+            <li>
+                <div class="improvement-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <strong>Improve:</strong> Add quantified achievements (e.g., "Increased sales by 25%")
+                </div>
+            </li>
+            <li>
+                <div class="improvement-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <strong>Improve:</strong> Use action verbs to start each bullet point
+                </div>
+            </li>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No experience section detected in the resume.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Education Analysis -->
+    <div class="analysis-card animate-slide-up">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3>Education Analysis</h3>
+        </div>
+        
+        {% if analysis.education %}
+        <div class="text-content mb-4">
+            {{ analysis.education }}
+        </div>
+        
+        <div class="improvement-list">
+            <li>
+                <div class="improvement-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div>
+                    <strong>Good:</strong> Education details are present
+                </div>
+            </li>
+            <li>
+                <div class="improvement-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <strong>Improve:</strong> Include relevant coursework or academic projects
+                </div>
+            </li>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No education section detected in the resume.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- AI Recommendations -->
+    <div class="analysis-card animate-slide-up">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3>AI-Powered Recommendations</h3>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="suggestion-card">
+                    <h6 class="mb-2">
+                        <i class="fas fa-key me-2 text-primary"></i>Keywords Optimization
+                    </h6>
+                    <p class="mb-2">Add these industry keywords to improve ATS compatibility:</p>
+                    <div>
+                        <span class="skill-tag" style="background: #17a2b8;">Project Management</span>
+                        <span class="skill-tag" style="background: #17a2b8;">Team Leadership</span>
+                        <span class="skill-tag" style="background: #17a2b8;">Data Analysis</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="suggestion-card">
+                    <h6 class="mb-2">
+                        <i class="fas fa-chart-bar me-2 text-success"></i>Quantify Achievements
+                    </h6>
+                    <p class="mb-2">Add numbers to make your experience more impactful:</p>
+                    <ul class="small mb-0">
+                        <li>"Managed team of X people"</li>
+                        <li>"Increased efficiency by X%"</li>
+                        <li>"Reduced costs by $X"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="suggestion-card">
+            <h6 class="mb-2">
+                <i class="fas fa-file-alt me-2 text-info"></i>Format Suggestions
+            </h6>
+            <p class="mb-0">Consider using our professional templates for better visual appeal and ATS compatibility.</p>
+            <div class="mt-3">
+                <a href="{{ url_for('templates') }}" class="btn btn-primary">
+                    <i class="fas fa-palette me-2"></i>Browse Templates
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action-btn" onclick="scrollToTop()" title="Scroll to top">
+    <i class="fas fa-arrow-up"></i>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Animate progress bars on scroll
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const progressBars = entry.target.querySelectorAll('.progress-bar-custom');
+                progressBars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+                
+                // Animate score circle
+                const scoreCircle = entry.target.querySelector('.score-circle');
+                if (scoreCircle) {
+                    scoreCircle.style.setProperty('--score-angle', '252deg');
+                }
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.analysis-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+
+// Add smooth scrolling for internal links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
